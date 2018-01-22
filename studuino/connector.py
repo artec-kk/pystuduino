@@ -6,6 +6,9 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 #class Connector(metaclass=ABCMeta):
 class Connector(with_metaclass(ABCMeta, object)):
+  	"""
+	クラスの説明 [ToDo]
+	"""
 	@abstractproperty
 	def offset(self):
 		return
@@ -17,16 +20,25 @@ class Connector(with_metaclass(ABCMeta, object)):
 		return (self.offset + self.id)
 
 class ConnectorDC(Connector):
+  	"""
+	クラスの説明 [ToDo]
+	"""
 	@property
 	def offset(self):
 		return 0
 
 class ConnectorServo(Connector):
+  	"""
+	クラスの説明 [ToDo]
+	"""
 	@property
 	def offset(self):
 		return 2
 
 class ConnectorSensor(Connector):
+  	"""
+	クラスの説明 [ToDo]
+	"""
 	@property
 	def offset(self):
 		return 10

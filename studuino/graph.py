@@ -16,6 +16,9 @@ stop_event = None
 stop_flag = None
 
 class PlotArea:
+	"""
+	クラスの説明
+	"""
 	def __init__(self, ax, x, num):
 		self.ax = ax
 		self.x = x
@@ -32,9 +35,27 @@ class PlotArea:
 			self.lines.append(tmp_l)
 
 	def setLabel(self, labels):
+		"""
+		関数の説明
+
+		:type self: 型
+		:type labels: 型
+		:param self: 型
+		:param labels: 型
+		"""
 		self.labels = labels
 
 	def update(self, index, val):
+		"""
+		関数の説明
+
+		:type self: 型
+		:type index: 型
+		:type val: 型
+		:param self: 型
+		:param index: 型
+		:param val: 型
+		"""
 		add = np.array([val])
 		self.y[index] = np.r_[self.y[index][1:], add]
 		self.lines[index].set_label('%s: %d' % (self.labels[index], val))
@@ -44,6 +65,9 @@ class PlotArea:
 		self.ax.set_xlim((self.x.min(), self.x.max()))
 
 class Graph:
+	"""
+	クラスの説明
+	"""
 	size_x = 20
 
 	def __init__(self, io, q):
@@ -131,6 +155,12 @@ class Graph:
 			
 
 def __sensorUpdate(q):
+	"""
+	関数の説明
+
+	:type q: 型
+	:param q: 説明
+	"""
 	global stop_event
 	while not stop_event.is_set():
 		#print("sensor update")
@@ -150,6 +180,14 @@ def __sensorUpdate(q):
 	q.close()
 
 def showGraph(sensors, wait=False):
+	"""
+	関数の説明
+
+	:type sensors: 型
+	:type wait: 型
+	:param sensors: 説明
+	:param wait: 説明
+	"""
 	io = iostat.IOStat()
 
 	for elm in sensors:
@@ -180,6 +218,9 @@ def showGraph(sensors, wait=False):
 			command.stop()
 
 def hideGraph():
+	"""
+	関数の説明 [ToDo]
+	"""
 	global job, th_data, stop_event
 	stop_event.set()
 	#print('th_data join')

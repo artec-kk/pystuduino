@@ -11,9 +11,11 @@ servo_angles = [90] * 8
 LOCK = threading.Lock()
 
 def start(comPort, baud=38400):
-	"""
+  	"""
 	Connect to the Studuino board and run python script.
 
+	:type comPort: 型
+	:type baud: 型
 	:param comPort: Serial port assignment
 	:param baud: baud rate (default:38400)
 	"""
@@ -44,8 +46,10 @@ def __send(data1, data2):
 	"""
 	Send data to the Studuino.
 
-	:param data1: [ToDo]
-	:param data2: [ToDo]
+	:type data1: 型
+	:type data2: 型
+	:param data1: 説明
+	:param data2: 説明
 	"""
 	global LOCK
 	with LOCK:
@@ -66,8 +70,10 @@ def init(pin, part):
 	"""
 	Initialize the Studuino board.
 
-	:param pin: [ToDo]
-	:param part: [ToDo]
+	:type pin: 型
+	:type part: 型
+	:param pin: 説明
+	:param part: 説明
 	"""
 	data1 = 0xc0 + ((pin >> 1) & 0x0f)
 	data2 = ((pin & 0x01) << 6) + part.id
@@ -78,8 +84,10 @@ def led(pin, action):
 	"""
 	Control the LEDs.
 
-	:param pin: [ToDo]
-	:param action: [ToDo]
+	:type pin: 型
+	:type action: 型
+	:param pin: 説明
+	:param action: 説明
 	"""
 	id = pin - 10   # PinID to Axx ID (Axx begins with 10.)
 	data1 = 0xb0 + ((id << 1) & 0x0e) + (action & 0x01)
@@ -91,10 +99,14 @@ def buzzer(pin, action, sound=0, duration=0):
 	"""
 	Control the Buzzers.
 
-	:param pin: [ToDo]
-	:param action: [ToDo]
-	:param sound: [ToDo]
-	:param duration: [ToDo]
+	:type pin: 型
+	:type action: 型
+	:type sound: 型
+	:type duration: 型
+	:param pin: 説明
+	:param action: 説明
+	:param sound: 説明
+	:param duration: 説明
 	"""
 	id = pin - 10   # PinID to Ax ID (Ax begins with 10.)
 	data1 = 0xa0 + ((id << 1) & 0x0e) + (action & 0x01)
@@ -109,8 +121,10 @@ def dcPower(pin, power):
 	"""
 	Set power for the DC Motor.
 
-	:param pin: [ToDo]
-	:param power: [ToDo]
+	:type pin: 型
+	:type power: 型
+	:param pin: 説明
+	:param power: 説明
 	"""
 	data1 = 0x84 + ((pin << 3) & 0x0f)
 	data2 = power & 0x7f
@@ -121,8 +135,10 @@ def dc(pin, motion):
 	"""
 	Move the DC Motor.
 
-	:param pin: [ToDo]
-	:param motion: [ToDo]
+	:type pin: 型
+	:type motion: 型
+	:param pin: 説明
+	:param motion: 説明
 	"""
 	data1 = 0x80 + ((pin << 3) & 0x0f) + (1 + (motion >> 1 & 0x01))
 	data2 = motion & 0x01
@@ -133,8 +149,10 @@ def servo(pin, angle):
 	"""
 	Move the Servo Motor.
 
-	:param pin: [ToDo]
-	:param angle: [ToDo]
+	:type pin: 型
+	:type angle: 型
+	:param pin: 説明
+	:param angle: 説明
 	"""
 	global servo_angles
 	id = pin - 2   # PinID to Dx ID (Dxx begins with 2.)
@@ -152,8 +170,10 @@ def syncServo(action, delay=0):
 	"""
 	Move the Servo Motor synchronously.
 
-	:param action: [ToDo]
-	:param delay: [ToDo]
+	:type action: 型
+	:type delay: 型
+	:param action: 説明
+	:param delay: 説明
 	"""
 	data1 = 0xd0
 	data2 = ((action & 0x01) << 6) + delay
@@ -169,9 +189,12 @@ def multiServo(pins, angles, delay=0):
 	"""
 	Move prural Servo Motors synchronously.
 
-	:param pins: [ToDo]
-	:param angles: [ToDo]
-	:param delay: [ToDo]
+	:type pins: 型
+	:type angles: 型
+	:type delay: 型
+	:param pins: 説明
+	:param angles: 説明
+	:param delay: 説明
 	"""
 	if not len(pins) == len(angles):
 		return
@@ -190,6 +213,12 @@ def multiServo(pins, angles, delay=0):
 	time.sleep(delay * deltaMax / 1000)
 
 def getAngles():
+	"""
+	説明を書いてください
+
+	rtype: 戻り値の型
+	return: 戻り値の説明
+	"""
 	global servo_angles
 	return servo_angles
 
@@ -197,7 +226,10 @@ def getSensor(pin):
 	"""
 	Get the sensor value.
 
-	:param pin: [ToDo]
+	:type pin: 型
+	:param pin: 説明
+	:rtype: 戻り値の型
+	:return: 戻り値の説明
 	"""
 	global ser
 	id = pin - 10   # PinID to Axx ID (Axx begins with 10.)
@@ -214,6 +246,9 @@ def getSensor(pin):
 def getAccel():
 	"""
 	Get the accelerometer value.
+
+	:rtype: 戻り値の型
+	:return: 戻り値の説明
 	"""
 	global ser
 	id = 14 - 10   # PinID(14) to Axx ID (Axx begins with 10.)
