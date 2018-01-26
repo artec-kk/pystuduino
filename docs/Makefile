@@ -55,7 +55,7 @@ clean:
 
 .PHONY: html
 html:
-	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) ../api
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
