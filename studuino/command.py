@@ -17,9 +17,9 @@ def start(comPort, baud=38400):
     """
     Connect to the Studuino board and run python script.
 
-    :type comPort: 型
-    :type baud: 型
-    :param comPort: Serial port assignment
+    :type comPort: str 
+    :type baud: int 
+    :param comPort: Serial port name
     :param baud: baud rate (default:38400)
     """
     try:
@@ -69,7 +69,7 @@ def __send(data1, data2):
     #if len(rcv) == 2:
         #print ord(rcv[0]), ord(rcv[1])
 
-def init(pin, part):
+def _init(pin, part):
     """
     Initialize the Studuino board.
 
@@ -83,7 +83,7 @@ def init(pin, part):
     #print('Initialize', hex(data1), hex(data2))
     __send(data1, data2)
 
-def led(pin, action):
+def _led(pin, action):
     """
     Control the LEDs.
 
@@ -98,7 +98,7 @@ def led(pin, action):
     #print('LED', hex(data1), hex(data2))
     __send(data1, data2)
 
-def buzzer(pin, action, sound=0, duration=0):
+def _buzzer(pin, action, sound=0, duration=0):
     """
     Control the Buzzers.
 
@@ -120,7 +120,7 @@ def buzzer(pin, action, sound=0, duration=0):
         time.sleep(duration)
         __send(data1 & 0xfe, 0)
 
-def dcPower(pin, power):
+def _dcPower(pin, power):
     """
     Set power for the DC Motor.
 
@@ -134,7 +134,7 @@ def dcPower(pin, power):
     #print('DC POWER', hex(data1), hex(data2))
     __send(data1, data2)
 
-def dc(pin, motion):
+def _dc(pin, motion):
     """
     Move the DC Motor.
 
@@ -148,7 +148,7 @@ def dc(pin, motion):
     #print('DC Motion', hex(data1), hex(data2))
     __send(data1, data2)
 
-def servo(pin, angle):
+def _servo(pin, angle):
     """
     Move the Servo Motor.
 
@@ -169,7 +169,7 @@ def servo(pin, angle):
 START = 0
 STOP  = 1
 
-def syncServo(action, delay=0):
+def _syncServo(action, delay=0):
     """
     Move the Servo Motor synchronously.
 
@@ -188,7 +188,7 @@ def syncServo(action, delay=0):
         if not len(rcv) == 0:
             val = ord(rcv)
 
-def multiServo(pins, angles, delay=0):
+def _multiServo(pins, angles, delay=0):
     """
     Move prural Servo Motors synchronously.
 
@@ -204,18 +204,18 @@ def multiServo(pins, angles, delay=0):
 
     global servo_angles
 
-    syncServo(START, delay)
+    _syncServo(START, delay)
     deltaMax = 0
     for e1, e2 in zip(pins, angles):
         delta = abs(e2 - servo_angles[e1.id -2])
         if delta > deltaMax:
             deltaMax = delta
-        servo(e1.id, e2)
+        _servo(e1.id, e2)
     #print('deltaMax:', deltaMax)
-    syncServo(STOP)
+    _syncServo(STOP)
     time.sleep(delay * deltaMax / 1000)
 
-def getAngles():
+def _getAngles():
     """
     説明を書いてください
 
@@ -225,7 +225,7 @@ def getAngles():
     global servo_angles
     return servo_angles
 
-def getSensor(pin):
+def _getSensor(pin):
     """
     Get the sensor value.
 
@@ -246,7 +246,7 @@ def getSensor(pin):
         val = ord(rcv)
     return val
 
-def getAccel():
+def _getAccel():
     """
     Get the accelerometer value.
 

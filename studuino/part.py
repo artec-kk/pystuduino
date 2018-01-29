@@ -16,51 +16,43 @@ class Part(with_metaclass(ABCMeta, object)):
 	@abstractproperty
 	def id(self):
 		"""
-		関数の説明
+		Part ID
 
-		:type self: 型
-		:param self: 説明
 		"""
 		return
 
 	@abstractproperty
 	def name(self):
 		"""
-		関数の説明
+		Part name
 
-		:type self: 型
-		:param self: 説明
 		"""
 		return
 
 	@abstractmethod
-	def canAttach(self, connector):
+	def _canAttach(self, connector):
 		"""
 		関数の説明
 
-		:type self: 型
 		:type connector: 型
-		:param self: 説明
 		:param connector: 説明
 		"""
 		return
 
 	def attach(self, connector):
 		"""
-		関数の説明
+		Attach the part to the specified connector.
 
-		:type self: 型
-		:type connector: 型
-		:param self: 説明
-		:param connector: 説明
+		:type connector: Connector
+		:param connector: A Connector object defined in studuino.connector.
 		"""
-		if self.canAttach(connector):
+		if self._canAttach(connector):
 			self.connector = connector
-			command.init(connector.getGlobalId(), self)
-			print("Part @%s is attached to connector %d." % (self.name, connector.getGlobalId()))
+			command._init(connector._getGlobalId(), self)
+			print("Part @%s is attached to connector %d." % (self.name, connector._getGlobalId()))
 		else:
 			raise InitException(self)
-			print("Part @%s can't be attached to connector %d." % (self.name, connector.getGlobalId()))
+			print("Part @%s can't be attached to connector %d." % (self.name, connector._getGlobalId()))
 
 class DCMotor(Part):
 	"""
@@ -69,12 +61,10 @@ class DCMotor(Part):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		DC motor's part ID
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: DC motor's part ID.
 		"""
 		return 0x01
 
@@ -83,60 +73,50 @@ class DCMotor(Part):
 		"""
 		関数の説明
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: "DC  Motor"
 		"""
 		return "DC Motor"
 
-	def canAttach(self, connector):
+	def _canAttach(self, connector):
 		"""
 		関数の説明
 
-		:type self: 型
 		:type connector: 型
-		:param self: 説明
 		:param connector: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: bool
+		:return: Whether this part is connectable to the specified connector.
 		"""
 		#return (connector >= 0 and connector <= 1)
 		return isinstance(connector, ConnectorDC) 
 
 	def setPower(self, power):
 		"""
-		関数の説明
+		Set the DC motor's power.
 
-		:type self: 型
-		:type power: 型
-		:param self: 説明
-		:param power: 説明
+		:type power: int
+		:param power: DC motor power [0-100].
 		"""
 		self.power = power
-		command.dcPower(self.connector.id, power)
+		command._dcPower(self.connector.id, power)
 
 	def move(self, motion):
 		"""
-		関数の説明
+		Rotate the dc motor by specified motion type.
 
-		:type self: 型
-		:type motion: 型
-		:param self: 説明
-		:param motion: 説明
+		:type motion: int
+		:param motion: The number representing the motion type. [FWD|BCK]
 		"""
-		command.dc(self.connector.id, motion)
+		command._dc(self.connector.id, motion)
 
 	def stop(self, motion):
 		"""
-		関数の説明
+		Stop the dc motor by specified motion type.
 
-		:type self: 型
-		:type motion: 型
-		:param self: 説明
-		:param motion: 説明
+		:type motion: int
+		:param motion: The number representing the motion type. [BRAKE|COAST]
 		"""
-		command.dc(self.connector.id, motion)
+		command._dc(self.connector.id, motion)
 
 class Servomotor(Part):
 	"""
@@ -145,73 +125,65 @@ class Servomotor(Part):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		Servomotor's part ID
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: 0x02
 		"""
 		return 0x02
 
 	@property
 	def name(self):
 		"""
-		関数の説明
+		Servomotor's part name
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: Servomotor
 		"""
 		return "Servomotor"
 
-	def canAttach(self, connector):
+	def _canAttach(self, connector):
 		"""
 		関数の説明
 
-		:type self: 型
 		:type connector: 型
-		:param self: 説明
-		:param seconnectorlf: 説明
-		:rtype: 戻り値の型
+		:param connector: 説明
+		:rtype: bool
 		:return: 戻り値の説明
 		"""
 		return isinstance(connector, ConnectorServo) 
 
 	def setAngle(self, angle):
 		"""
-		関数の説明
+		Set the servomotor's angle
 
-		:type self: 型
-		:type conanglenector: 型
-		:param self: 説明
-		:param angle: 説明
+		:type angle: int
+		:param angle: Servomotor's angle in degree.
 		"""
 		self.angle = angle
-		command.servo(self.connector.getGlobalId(), angle)
+		command._servo(self.connector._getGlobalId(), angle)
 
 	@staticmethod
 	def syncMove(servos, angles, delay):
 		"""
 		関数の説明
 
-		:type servos: 型
-		:type angles: 型
-		:type delay: 型
-		:param servos: 説明
-		:param angles: 説明
-		:param delay: 説明
+		:type servos: int[]
+		:type angles: int[]
+		:type delay: int
+		:param servos: Array of servomotor port.
+		:param angles: Array of servomotor angle.
+		:param delay: Delay time per 1 degree [milliseconds].
 		"""
-		prev_angles = command.getAngles()
-		command.syncServo(0, delay)
+		prev_angles = command._getAngles()
+		command._syncServo(0, delay)
 		deltaMax = 0
 		for e1, e2 in zip(servos, angles):
 			delta = abs(e2 - prev_angles[e1.id])
 			if delta > deltaMax:
 				deltaMax = delta
 			e1.setAngle(e2)
-		command.syncServo(1)
+		command._syncServo(1)
 
 class LED(Part):
 	"""
@@ -220,34 +192,28 @@ class LED(Part):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		LED's part ID
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: 0x03
 		"""
 		return 0x03
 
 	@property
 	def name(self):
 		"""
-		関数の説明
+		LED's part name
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: LED
 		"""
 		return "LED"
 
-	def canAttach(self, connector):
+	def _canAttach(self, connector):
 		"""
 		関数の説明
 
-		:type self: 型
 		:type connector: 型
-		:param self: 説明
 		:param connector: 説明
 		:rtype: 戻り値の型
 		:return: 戻り値の説明
@@ -256,21 +222,17 @@ class LED(Part):
 
 	def on(self):
 		"""
-		関数の説明
+		Turning the LED on.
 
-		:type self: 型
-		:param self: 説明
 		"""
-		command.led(self.connector.getGlobalId(), ON)
+		command._led(self.connector._getGlobalId(), ON)
 
 	def off(self):
 		"""
-		関数の説明
+		Turning the LED off.
 
-		:type self: 型
-		:param self: 説明
 		"""
-		command.led(self.connector.getGlobalId(), OFF)
+		command._led(self.connector._getGlobalId(), OFF)
 
 class Buzzer(Part):
 	"""
@@ -279,34 +241,28 @@ class Buzzer(Part):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		Buzzer's part ID
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: 0x04
 		"""
 		return 0x04
 
 	@property
 	def name(self):
 		"""
-		関数の説明
+		Buzzer's part name
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: Buzzer
 		"""
 		return "Buzzer"
 
-	def canAttach(self, connector):
+	def _canAttach(self, connector):
 		"""
 		関数の説明
 
-		:type self: 型
 		:type connector: 型
-		:param self: 説明
 		:param connector: 説明
 		:rtype: 戻り値の型
 		:return: 戻り値の説明
@@ -315,27 +271,23 @@ class Buzzer(Part):
 
 	def on(self, sound, octave=0, duration=0):
 		"""
-		関数の説明
+		Play the specified type of sound.
 
-		:type self: 型
-		:type sound: 型
-		:type octave: 型
-		:type duration: 型
-		:param self: 説明
-		:param sound: 説明
-		:param octave: 説明
-		:param duration: 説明
+		:type sound: int
+		:type octave: int
+		:type duration: int
+		:param sound: Sound ID registered int studuino.const.
+		:param octave: Octaves of the sound [0-8].
+		:param duration: Duration of the sound in milliseconds.
 		"""
-		command.buzzer(self.connector.getGlobalId(), ON, sound + octave*12, duration)
+		command._buzzer(self.connector._getGlobalId(), ON, sound + octave*12, duration)
 
 	def off(self):
 		"""
-		関数の説明
+		Stop the buzzer.
 
-		:type self: 型
-		:param self: 説明
 		"""
-		command.buzzer(self.connector.getGlobalId(), OFF)
+		command._buzzer(self.connector._getGlobalId(), OFF)
 
 class Sensor(Part):
 	"""
@@ -343,26 +295,22 @@ class Sensor(Part):
 	"""
 	def getValue(self):
 		"""
-		関数の説明
+		Returning the sensor's value.
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+                :return: Sensor value (Digital Sensor:[0|1] Analog Sensor:[0-100])
 		"""
-		return command.getSensor(self.connector.getGlobalId())
+		return command._getSensor(self.connector._getGlobalId())
 
 class DigitalSensor(Sensor):
 	"""
 	Digital Sensor Class
 	"""
-	def canAttach(self, connector):
+	def _canAttach(self, connector):
 		"""
 		関数の説明
 
-		:type self: 型
 		:type connector: 型
-		:param self: 説明
 		:param connector: 説明
 		:rtype: 戻り値の型
 		:return: 戻り値の説明
@@ -373,13 +321,11 @@ class AnalogSensor(Sensor):
 	"""
 	Analog Sensor Class
 	"""
-	def canAttach(self, connector):
+	def _canAttach(self, connector):
 		"""
 		関数の説明
 
-		:type self: 型
 		:type connector: 型
-		:param self: 説明
 		:param connector: 説明
 		:rtype: 戻り値の型
 		:return: 戻り値の説明
@@ -393,24 +339,20 @@ class LightSensor(AnalogSensor):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		Light sensor's part ID
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: 0x10
 		"""
 		return 0x10
 
 	@property
 	def name(self):
 		"""
-		関数の説明
+		Light sensor's part name
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: "Light sensor"
 		"""
 		return "Light sensor"
 
@@ -421,24 +363,20 @@ class TouchSensor(DigitalSensor):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		Touch sensor's part ID.
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: 0x11
 		"""
 		return 0x11
 
 	@property
 	def name(self):
 		"""
-		関数の説明
+		Touch sensor's part name.
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: "Touch sensor"
 		"""
 		return "Touch sensor"
 
@@ -449,24 +387,20 @@ class SoundSensor(AnalogSensor):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		Sound sensor's part ID.
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: 0x12
 		"""
 		return 0x12
 
 	@property
 	def name(self):
 		"""
-		関数の説明
+		Sound sensor's part name.
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: "Sound sensor"
 		"""
 		return "Sound sensor"
 
@@ -477,24 +411,20 @@ class IRPhotoreflector(AnalogSensor):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		IR Photoreflector's part ID.
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: 0x13
 		"""
 		return 0x13
 
 	@property
 	def name(self):
 		"""
-		関数の説明
+		IR Photoreflector's part name.
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: "IRPhotorefrector"
 		"""
 		return "IRPhotoreflector"
 
@@ -505,33 +435,27 @@ class Accelerometer(Sensor):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		Acceoerometer's part ID
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: 0x14
 		"""
 		return 0x14
 	@property
 	def name(self):
 		"""
-		関数の説明
+		Acceoerometer's part namej
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: Accelerometer
 		"""
 		return "Accelerometer"
 
-	def canAttach(self, connector):
+	def _canAttach(self, connector):
 		"""
 		関数の説明
 
-		:type self: 型
 		:type connector: 型
-		:param self: 説明
 		:param connector: 説明
 		:rtype: 戻り値の型
 		:return: 戻り値の説明
@@ -540,14 +464,12 @@ class Accelerometer(Sensor):
 
 	def getValue(self):
 		"""
-		関数の説明
+		Returning the acceleration values.
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int[]
+		:return: Array of acceleration (x, y, z).
 		"""
-		return command.getAccel()
+		return command._getAccel()
 
 class PushSwitch(DigitalSensor):
 	"""
@@ -556,34 +478,28 @@ class PushSwitch(DigitalSensor):
 	@property
 	def id(self):
 		"""
-		関数の説明
+		Push switch's part ID
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: int
+		:return: 0x15
 		"""
 		return 0x15
 
 	@property
 	def name(self):
 		"""
-		関数の説明
+		Push switch's part name
 
-		:type self: 型
-		:param self: 説明
-		:rtype: 戻り値の型
-		:return: 戻り値の説明
+		:rtype: str
+		:return: Push switch
 		"""
 		return "Push switch"
 
-	def canAttach(self, connector):
+	def _canAttach(self, connector):
 		"""
 		関数の説明
 
-		:type self: 型
 		:type connector: 型
-		:param self: 説明
 		:param connector: 説明
 		:rtype: 戻り値の型
 		:return: 戻り値の説明

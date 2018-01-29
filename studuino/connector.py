@@ -6,41 +6,47 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 
 #class Connector(metaclass=ABCMeta):
 class Connector(with_metaclass(ABCMeta, object)):
-  	"""
-	クラスの説明 [ToDo]
+	"""
+	Base class of connectors.
 	"""
 	@abstractproperty
-	def offset(self):
+	def _offset(self):
 		return
 
 	def __init__(self, id):
 		self.id = id
 
-	def getGlobalId(self):
-		return (self.offset + self.id)
+	"""
+	Returning the global ID of the connector.
+
+	:rtype: int
+	:rparam: Global ID of the connector.
+	"""
+	def _getGlobalId(self):
+		return (self._offset + self.id)
 
 class ConnectorDC(Connector):
-  	"""
-	クラスの説明 [ToDo]
+	"""
+	DC motor connector
 	"""
 	@property
-	def offset(self):
+	def _offset(self):
 		return 0
 
 class ConnectorServo(Connector):
-  	"""
-	クラスの説明 [ToDo]
+	"""
+	Servomotor connector
 	"""
 	@property
-	def offset(self):
+	def _offset(self):
 		return 2
 
 class ConnectorSensor(Connector):
-  	"""
-	クラスの説明 [ToDo]
+	"""
+	Sensor connector
 	"""
 	@property
-	def offset(self):
+	def _offset(self):
 		return 10
 
 
@@ -67,5 +73,5 @@ if __name__ == '__main__':
 
 
 	for elm in (M1, M2, D2, D4, D7, D8, D9, D10, D11, D12, A0, A1, A2, A3, A4, A5, A6, A7):
-		print("Connector GID:%d ID:%d" % (elm.getGlobalId(), elm.id))
+		print("Connector GID:%d ID:%d" % (elm._getGlobalId(), elm.id))
 

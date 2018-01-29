@@ -6,16 +6,17 @@ import matplotlib.pyplot as plt
 import multiprocessing
 import threading
 import time
+from .const import *
+from .part import *
 
 from . import command
-from . import iostat
 
 job = None
 th_data = None
 stop_event = None
 stop_flag = None
 
-class PlotArea:
+class _PlotArea:
 	"""
 	クラスの説明
 	"""
@@ -64,9 +65,104 @@ class PlotArea:
 		self.ax.legend(loc='upper left')
 		self.ax.set_xlim((self.x.min(), self.x.max()))
 
-class Graph:
+class _IOStat:
 	"""
 	クラスの説明
+	"""
+	def __init__(self):
+		self.inited = {}
+
+	def set(self, port, part):
+		"""
+		関数の説明
+
+		:type port: 型
+		:type part: 型
+		:param port: 説明
+		:param part: 説明
+		"""
+		if not port in self.inited:
+			self.inited[port] = part
+
+	def __filterDigital(self, x):
+		"""
+		関数の説明
+
+		:type x: 型
+		:param x: 説明
+		:rtype: 戻り値の型
+		:return: 戻り値の説明
+		"""
+		return isinstance(x[1], DigitalSensor)
+
+	def __filterAnalog(self, x):
+		"""
+		関数の説明
+
+		:type x: 型
+		:param x: 説明
+		:rtype: 戻り値の型
+		:return: 戻り値の説明
+		"""
+		return isinstance(x[1], AnalogSensor)
+
+	def __filterAccel(self, x):
+		"""
+		関数の説明
+
+		:type x: 型
+		:param x: 説明
+		:rtype: 戻り値の型
+		:return: 戻り値の説明
+		"""
+		return isinstance(x[1], Accelerometer)
+
+	def getDigital(self):
+		"""
+		関数の説明
+
+		:rtype: 戻り値の型
+		:return: 戻り値の説明
+		"""
+		return list(filter(self.__filterDigital, self.inited.items()))
+	
+	def getAnalog(self):
+		"""
+		関数の説明
+
+		:rtype: 戻り値の型
+		:return: 戻り値の説明
+		"""
+		return list(filter(self.__filterAnalog, self.inited.items()))
+	
+	def getAccel(self):
+		"""
+		関数の説明
+
+		:rtype: 戻り値の型
+		:return: 戻り値の説明
+		"""
+		return list(filter(self.__filterAccel, self.inited.items()))
+
+	def getNumOfTypes(self):
+		"""
+		関数の説明
+
+		:rtype: 戻り値の型
+		:return: 戻り値の説明
+		"""
+		num = 0
+		if len(self.getDigital()) > 0:
+			num += 1
+		if len(self.getAnalog()) > 0:
+			num += 1
+		if len(self.getAccel()) > 0:
+			num += 1
+		return num
+
+class _Graph:
+	"""
+	Graph for displaying sensor data.
 	"""
 	size_x = 20
 
@@ -87,7 +183,7 @@ class Graph:
 		graphACC = None
 	
 		if not len(io.getDigital()) == 0:
-			graphD = PlotArea(fig.add_subplot(1, numGraph, pos + 1), x, len(io.getDigital()))
+			graphD = _PlotArea(fig.add_subplot(1, numGraph, pos + 1), x, len(io.getDigital()))
 			for elm in io.getDigital():
 				lbl = 'A' + str(elm[0].id) + ' ' + str(elm[1].name)
 				graphD.labels.append(lbl)
@@ -95,7 +191,7 @@ class Graph:
 			pos = pos + 1
 
 		if not len(io.getAnalog()) == 0:
-			graphA = PlotArea(fig.add_subplot(1, numGraph, pos + 1), x, len(io.getAnalog()))
+			graphA = _PlotArea(fig.add_subplot(1, numGraph, pos + 1), x, len(io.getAnalog()))
 			for elm in io.getAnalog():
 				lbl = 'A' + str(elm[0].id) + ' ' + str(elm[1].name)
 				graphA.labels.append(lbl)
@@ -103,7 +199,7 @@ class Graph:
 			pos = pos + 1
 
 		if not len(io.getAccel()) == 0:
-			graphACC = PlotArea(fig.add_subplot(1, numGraph, pos + 1), x, 3)
+			graphACC = _PlotArea(fig.add_subplot(1, numGraph, pos + 1), x, 3)
 			graphACC.setLabel(['Acc X', 'Acc Y', 'Acc Z'])
 			graphACC.ax.set_ylim(0, 100)
 			pos = pos + 1
@@ -181,14 +277,14 @@ def __sensorUpdate(q):
 
 def showGraph(sensors, wait=False):
 	"""
-	関数の説明
+	Open the graph window.
 
-	:type sensors: 型
-	:type wait: 型
-	:param sensors: 説明
-	:param wait: 説明
+	:type sensors: Part[]
+	:type wait: bool
+	:param sensors: Array of Part objects to be displayed.
+        :param wait: default: False
 	"""
-	io = iostat.IOStat()
+	io = _IOStat()
 
 	for elm in sensors:
 		io.set(elm.connector, elm)
@@ -197,7 +293,7 @@ def showGraph(sensors, wait=False):
 	global job, stop_flag
 	data_conn, graph_conn = multiprocessing.Pipe()
 	stop_flag = multiprocessing.Event()
-	gr = Graph(io, graph_conn)
+	gr = _Graph(io, graph_conn)
 	job = multiprocessing.Process(target=gr.update, args=(stop_flag,))
 	job.start()
 
@@ -219,7 +315,7 @@ def showGraph(sensors, wait=False):
 
 def hideGraph():
 	"""
-	関数の説明 [ToDo]
+	Close the graph window.
 	"""
 	global job, th_data, stop_event
 	stop_event.set()
