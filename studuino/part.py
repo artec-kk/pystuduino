@@ -74,7 +74,7 @@ class DCMotor(Part):
 		関数の説明
 
 		:rtype: str
-		:return: "DC  Motor"
+		:return: "DC Motor"
 		"""
 		return "DC Motor"
 
@@ -138,7 +138,7 @@ class Servomotor(Part):
 		Servomotor's part name
 
 		:rtype: str
-		:return: Servomotor
+		:return: "Servomotor"
 		"""
 		return "Servomotor"
 
@@ -205,7 +205,7 @@ class LED(Part):
 		LED's part name
 
 		:rtype: str
-		:return: LED
+		:return: "LED"
 		"""
 		return "LED"
 
@@ -254,7 +254,7 @@ class Buzzer(Part):
 		Buzzer's part name
 
 		:rtype: str
-		:return: Buzzer
+		:return: "Buzzer"
 		"""
 		return "Buzzer"
 
@@ -444,10 +444,10 @@ class Accelerometer(Sensor):
 	@property
 	def name(self):
 		"""
-		Acceoerometer's part namej
+		Acceoerometer's part name
 
 		:rtype: str
-		:return: Accelerometer
+		:return: "Accelerometer"
 		"""
 		return "Accelerometer"
 
@@ -491,7 +491,7 @@ class PushSwitch(DigitalSensor):
 		Push switch's part name
 
 		:rtype: str
-		:return: Push switch
+		:return: "Push switch"
 		"""
 		return "Push switch"
 
