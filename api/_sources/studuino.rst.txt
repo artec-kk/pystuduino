@@ -36,14 +36,6 @@ studuino\.graph module
     :undoc-members:
     :show-inheritance:
 
-studuino\.iostat module
------------------------
-
-.. automodule:: studuino.iostat
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 studuino\.part module
 ---------------------
 

@@ -1,15 +1,14 @@
 .. studuino documentation master file, created by
-   sphinx-quickstart on Tue Jan 23 11:21:49 2018.
+   sphinx-quickstart on Tue Jan 30 02:23:51 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
 Welcome to studuino's documentation!
 ====================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 4
+   :caption: Contents:
 
    studuino
 
@@ -20,4 +19,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

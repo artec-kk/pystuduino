@@ -1,7 +1,0 @@
-studuino
-========
-
-.. toctree::
-   :maxdepth: 4
-
-   studuino
