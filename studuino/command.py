@@ -8,19 +8,21 @@ import serial
 import time
 import threading
 import struct
+from . import ble_wrapper
 
 ser = None
 servo_angles = [90] * 8
 LOCK = threading.Lock()
+fBLE = False
 
-def start(comPort, baud=38400):
+def start(comPort, baud=115200):
     """
     Connect to the Studuino board and run python script.
 
     :type comPort: str 
     :type baud: int 
     :param comPort: Serial port name
-    :param baud: baud rate (default:38400)
+    :param baud: baud rate (default:115200)
     """
     try:
         global ser
@@ -32,8 +34,22 @@ def start(comPort, baud=38400):
         print('ready')
         ser.read(2)
         print('start')
+        time.sleep(2)
     except:
         print('Could not find the port.')
+
+def startBLE(comPort, addr):
+    """
+    Connect to the Studuino board and run python script.
+
+    :type comPort: str 
+    :type addr: str 
+    :param comPort: Serial port name
+    :param addr: BLE module's MAC address (00:01:02:ab:cd:ef)
+    """
+    global fBLE
+    fBLE = True
+    ble_wrapper.start(comPort, addr)
 
 def stop():
     """
@@ -45,6 +61,9 @@ def stop():
         time.sleep(0.1)
         ser.close()
 
+def stopBLE():
+    ble_wrapper.stop()
+
 def __send(data1, data2):
     """
     Send data to the Studuino.
@@ -54,20 +73,20 @@ def __send(data1, data2):
     :param data1: 説明
     :param data2: 説明
     """
-    global LOCK
+    global LOCK, fBLE
     with LOCK:
         msg = struct.pack(b'BB', data1, data2)
 
+    if fBLE:
+    # BLE
+        ble_wrapper.write_command(msg)
+    else:
+    # USB
         try:
             global ser
             ser.write(msg)
         except:
             print('write exception')
-
-    #ser.timeout = 0.1
-    #rcv = ser.read(2)
-    #if len(rcv) == 2:
-        #print ord(rcv[0]), ord(rcv[1])
 
 def _init(pin, part):
     """
@@ -234,17 +253,23 @@ def _getSensor(pin):
     :rtype: 戻り値の型
     :return: 戻り値の説明
     """
-    global ser
+    global ser, fBLE
     id = pin - 10   # PinID to Axx ID (Axx begins with 10.)
     data1 = 0xd1
     data2 = id
     #print('get sensor', hex(data1), hex(data2))
-    __send(data1, data2)
     val = None
-    rcv = ser.read()
-    if not len(rcv) == 0:
-        val = ord(rcv)
-    return val
+    if fBLE:
+    # BLE
+        val = ble_wrapper.get_sensor((data1, data2))
+        return val[0]
+    else:
+    # USB
+        __send(data1, data2)
+        rcv = ser.read()
+        if not len(rcv) == 0:
+            val = ord(rcv)
+        return val
 
 def _getAccel():
     """
@@ -253,16 +278,22 @@ def _getAccel():
     :rtype: 戻り値の型
     :return: 戻り値の説明
     """
-    global ser
+    global ser, fBLE
     id = 14 - 10   # PinID(14) to Axx ID (Axx begins with 10.)
     data1 = 0xd1
     data2 = id
     #print('get sensor', hex(data1), hex(data2))
-    __send(data1, data2)
     val = None
-    rcv = ser.read(3)
-    if len(rcv) == 3:
-        #print(rcv)
-        val = struct.unpack(b'BBB', rcv)
+    if fBLE:
+    # BLE
+        rcv = ble_wrapper.get_accel((data1, data2))
+        val = rcv
+    else:
+    # USB
+        __send(data1, data2)
+        rcv = ser.read(3)
+        if len(rcv) == 3:
+            #print(rcv)
+            val = struct.unpack(b'BBB', rcv)
     return val
 
