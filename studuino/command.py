@@ -32,7 +32,7 @@ def start(comPort, baud=115200):
         while not ser.writable():
             time.sleep(0.01)
         print('ready')
-        ser.read(2)
+        #ser.read(2)
         print('start')
         time.sleep(2)
     except:
@@ -55,11 +55,14 @@ def stop():
     """
     Disonnect the Studuino board.
     """
-    global ser
-    if not ser == None:
-        print('Disconnected.')
-        time.sleep(0.1)
-        ser.close()
+    if fBLE:
+        stopBLE()
+    else:
+        global ser
+        if not ser == None:
+            print('Disconnected.')
+            time.sleep(0.1)
+            ser.close()
 
 def stopBLE():
     ble_wrapper.stop()
@@ -75,7 +78,8 @@ def __send(data1, data2):
     """
     global LOCK, fBLE
     with LOCK:
-        msg = struct.pack(b'BB', data1, data2)
+        data3 = (data1 + data2) & 0xff;
+        msg = struct.pack(b'BBB', data1, data2, data3)
 
     if fBLE:
     # BLE
