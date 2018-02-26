@@ -63,6 +63,7 @@ def startBLE(comPort, addr):
     global fBLE
     fBLE = True
     ble_wrapper.start(comPort, addr)
+    time.sleep(1)  # The sleep is necessary for ignoring the communication between BLE module and Studuino at establishing the connection.
 
 def stop():
     """
@@ -102,9 +103,9 @@ def __send(data1, data2):
     :param data2: 説明
     """
     global ser, sensor, LOCK, fBLE
-    with LOCK:
-        data3 = (data1 + data2) & 0xff;
-        msg = struct.pack(b'BBB', data1, data2, data3)
+    data3 = (data1 + data2) & 0xff;
+    msg = struct.pack(b'BBB', data1, data2, data3)
+    print('send command: ', msg)
 
     if fBLE:
     # BLE
@@ -112,11 +113,12 @@ def __send(data1, data2):
     else:
     # USB
         try:
-            sensor.startWaitingWriteResponse()
-            start = datetime.datetime.now()
-            ser.write(msg)
-            while (sensor.getWriteFlag() == 1 and (datetime.datetime.now() - start).seconds < 1):
-                pass
+            with LOCK:
+                sensor.startWaitingWriteResponse()
+                start = datetime.datetime.now()
+                ser.write(msg)
+                while (sensor.getWriteFlag() == 1 and (datetime.datetime.now() - start).seconds < 1):
+                    pass
         except:
             print('write exception')
 

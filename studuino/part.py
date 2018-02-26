@@ -48,7 +48,7 @@ class Part(with_metaclass(ABCMeta, object)):
 		"""
 		if self._canAttach(connector):
 			self.connector = connector
-			command._init(connector._getGlobalId(), self)
+			#command._init(connector._getGlobalId(), self)
 			print("Part @%s is attached to connector %d." % (self.name, connector._getGlobalId()))
 		else:
 			raise InitException(self)
