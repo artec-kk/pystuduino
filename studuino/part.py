@@ -175,6 +175,7 @@ class Servomotor(Part):
 		:param angles: Array of servomotor angle.
 		:param delay: Delay time per 1 degree [milliseconds].
 		"""
+		#print('syncmove')
 		prev_angles = command._getAngles()
 		command._syncServo(0, delay)
 		deltaMax = 0
@@ -300,7 +301,7 @@ class Sensor(Part):
 		:rtype: int
                 :return: Sensor value (Digital Sensor:[0|1] Analog Sensor:[0-100])
 		"""
-		return command._getSensor(self.connector._getGlobalId())
+		return command._getSensorValue(self.connector.id)
 
 class DigitalSensor(Sensor):
 	"""
@@ -317,6 +318,10 @@ class DigitalSensor(Sensor):
 		"""
 		return (isinstance(connector, ConnectorSensor) and connector.id <= 5)
 
+	def attach(self, connector):
+		Part.attach(self, connector)
+		command._initSensor(self.connector.id, 0)
+
 class AnalogSensor(Sensor):
 	"""
 	Analog Sensor Class
@@ -331,6 +336,10 @@ class AnalogSensor(Sensor):
 		:return: 戻り値の説明
 		"""
 		return isinstance(connector, ConnectorSensor)
+
+	def attach(self, connector):
+		Part.attach(self, connector)
+		command._initSensor(self.connector.id, 1)
 
 class LightSensor(AnalogSensor):
 	"""
@@ -461,6 +470,10 @@ class Accelerometer(Sensor):
 		:return: 戻り値の説明
 		"""
 		return (isinstance(connector, ConnectorSensor), connector.id == 4)
+
+	def attach(self, connector):
+		Part.attach(self, connector)
+		command._initSensor(self.connector.id, 2)
 
 	def getValue(self):
 		"""

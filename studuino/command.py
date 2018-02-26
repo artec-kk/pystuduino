@@ -6,13 +6,18 @@ Studuino for Python
 
 import serial
 import time
+import datetime
 import threading
 import struct
 from . import ble_wrapper
+from studuino.sensor import SensorManager
 
 ser = None
+sensor = None
+fConnected = False
 servo_angles = [90] * 8
 LOCK = threading.Lock()
+LOCK_READ = threading.Lock()
 fBLE = False
 
 def start(comPort, baud=115200):
@@ -24,11 +29,19 @@ def start(comPort, baud=115200):
     :param comPort: Serial port name
     :param baud: baud rate (default:115200)
     """
+    global ser, sensor, fConnected
     try:
-        global ser
-        ser = serial.Serial(comPort, baud)
+        ser = serial.Serial(comPort, baud, timeout=0)
         ser.write_timeout = 0.3
-        ser.read_timeout = 5
+        #ser.read_timeout = 0.05 
+        fConnected = True
+
+        sensor = SensorManager()
+        th_read = threading.Thread(target=_sensorRead)
+        th_read.setDaemon(True)
+        th_read.start()
+
+
         while not ser.writable():
             time.sleep(0.01)
         print('ready')
@@ -58,14 +71,26 @@ def stop():
     if fBLE:
         stopBLE()
     else:
-        global ser
+        global ser, LOCK_READ
         if not ser == None:
+            fConnected = False
             print('Disconnected.')
             time.sleep(0.1)
-            ser.close()
+            with LOCK_READ:
+                ser.close()
 
 def stopBLE():
     ble_wrapper.stop()
+
+def _sensorRead():
+    global sensor, fConnected, LOCK_READ
+    while fConnected:
+        try:
+            with LOCK_READ:
+                rcv = ser.read(5)
+            sensor.parseData(rcv)
+        except Exception as ex:
+            print('Read error: ', ex)
 
 def __send(data1, data2):
     """
@@ -76,7 +101,7 @@ def __send(data1, data2):
     :param data1: 説明
     :param data2: 説明
     """
-    global LOCK, fBLE
+    global ser, sensor, LOCK, fBLE
     with LOCK:
         data3 = (data1 + data2) & 0xff;
         msg = struct.pack(b'BBB', data1, data2, data3)
@@ -87,8 +112,11 @@ def __send(data1, data2):
     else:
     # USB
         try:
-            global ser
+            sensor.startWaitingWriteResponse()
+            start = datetime.datetime.now()
             ser.write(msg)
+            while (sensor.getWriteFlag() == 1 and (datetime.datetime.now() - start).seconds < 1):
+                pass
         except:
             print('write exception')
 
@@ -205,11 +233,11 @@ def _syncServo(action, delay=0):
     data2 = ((action & 0x01) << 6) + delay
     #print('Sync servo', hex(data1), hex(data2))
     __send(data1, data2)
+    if action == START:
+        sensor.startSyncServo()
     if action == STOP:
-        val = None
-        rcv = ser.read()
-        if not len(rcv) == 0:
-            val = ord(rcv)
+        while sensor.getSyncServoFlag() == 1:
+            pass
 
 def _multiServo(pins, angles, delay=0):
     """
@@ -248,7 +276,26 @@ def _getAngles():
     global servo_angles
     return servo_angles
 
-def _getSensor(pin):
+"""
+def _getSensor():
+    global ser
+    val = None
+    rcv = ser.read()
+    if not len(rcv) == 0:
+        val = ord(rcv)
+    return val
+    """
+
+def _initSensor(pin, snstype):
+    data1 = 0xd1
+    data2 = snstype << 4 | pin
+    __send(data1, data2)
+
+def _getSensorValue(pin):
+    global sensor
+    return sensor.getValue(pin)
+
+def _getSensorValue_(pin):
     """
     Get the sensor value.
 
