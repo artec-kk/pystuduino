@@ -105,7 +105,6 @@ def __send(data1, data2):
     global ser, sensor, LOCK, fBLE
     data3 = (data1 + data2) & 0xff;
     msg = struct.pack(b'BBB', data1, data2, data3)
-    print('send command: ', msg)
 
     if fBLE:
     # BLE
