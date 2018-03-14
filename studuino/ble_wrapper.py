@@ -92,7 +92,7 @@ def start(port, address):
 
     arr_addr = []
     arr_tmp = address.split(':')
-    for i in range(0, len(arr_tmp)):
+    for i in range(len(arr_tmp) - 1, -1, -1):
         arr_addr.append(int(arr_tmp[i], 16))
 
 
