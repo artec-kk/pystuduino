@@ -180,7 +180,7 @@ def paged_write():
 
 def readHex():
 	file = 'firmware.hex'
-	if len(args) > 1:
+	if len(args) > 2:
 		file = args[1]
 	f = open(file)
 	lines = f.readlines()
@@ -193,8 +193,11 @@ def readHex():
 	f.close()
 
 if __name__ == '__main__':
+	if len(args) != 2:
+		print('python upload.py COM*')
+		quit()
 	readHex()
-	start('COM5', 115200)
+	start(args[1], 115200)
 
 	#print('Get sync')
 	#ret = getsync()
