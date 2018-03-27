@@ -72,7 +72,7 @@ def stop():
     if fBLE:
         stopBLE()
     else:
-        global ser, LOCK_READ
+        global ser, LOCK_READ, fConnected
         if not ser == None:
             fConnected = False
             print('Disconnected.')
