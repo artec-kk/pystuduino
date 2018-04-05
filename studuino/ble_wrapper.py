@@ -3,6 +3,7 @@ from __future__ import division, unicode_literals, print_function
 
 from .bglib import BGLib
 import serial
+import threading
 import sys
 import time
 from datetime import datetime
@@ -11,8 +12,11 @@ fConnection = False
 fProcedureStarted = False
 fRecv = False
 fAccel = False
+fInSync = False
 idxAccel = 0
 rcvAccel = [0, 0, 0]
+
+LOCK = threading.Lock()
 
 def timeout_handler(sender, args):
     print( "BGAPI parser timed out.",)
@@ -41,7 +45,7 @@ def handle_write_command(sender, earg):
         fProcedureStarted = False
 
 def handle_receive(sender, earg):
-    global rcvData, fRecv, fAccel, idxAccel, rcvAccel
+    global rcvData, fRecv, fAccel, idxAccel, rcvAccel, fInSync
     rcvData = earg['value']
     # print('handle_receive', rcvData)
     if fAccel:
@@ -50,11 +54,18 @@ def handle_receive(sender, earg):
         if idxAccel == 3:
             idxAccel = 0
             fAccel = False
-    fRecv = True
+    if rcvData[0] == 0x80:
+        fRecv = True
+    if rcvData[0] == 0x9f:
+        fInSync = False
 
 def write_command(data):
-    global ser, ble
+    global ser, ble, fRecv, LOCK
     ble.send_command(ser, ble.ble_cmd_attclient_write_command(0, 14, data))
+    fRecv = False
+    while (not fRecv):
+        with LOCK:
+            ble.check_activity(ser)
 
 def get_sensor(data):
     global rcvData, fRecv
@@ -75,6 +86,18 @@ def get_accel(data):
         ble.check_activity(ser)
         time.sleep(0.01)
     return rcvAccel
+
+def _sensorRead():
+    global ble, ser, LOCK
+    while True:
+        with LOCK:
+            ble.check_activity(ser)
+        time.sleep(0.01)
+
+def start_sensor_read():
+    th_read = threading.Thread(target=_sensorRead)
+    th_read.setDaemon(True)
+    th_read.start()
 
 def main():
     if len(sys.argv) != 2:
@@ -219,6 +242,17 @@ def stop():
     ble.check_activity(ser, 1)
 
     print("stopped")
+
+def addReceiveHandler(handler):
+    ble.ble_evt_attclient_attribute_value += handler
+
+def waitSyncFinish():
+    global fInSync, LOCK
+    fInSync = True
+    while fInSync:
+        with LOCK:
+            ble.check_activity(ser)
+            time.sleep(0.01)
 
 if __name__ == "__main__":
     main()

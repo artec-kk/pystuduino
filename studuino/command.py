@@ -60,9 +60,13 @@ def startBLE(comPort, addr):
     :param comPort: Serial port name
     :param addr: BLE module's MAC address (00:01:02:ab:cd:ef)
     """
-    global fBLE
+    global fBLE, sensor
     fBLE = True
+
+    sensor = SensorManager()
     ble_wrapper.start(comPort, addr)
+    ble_wrapper.addReceiveHandler(_handle_ble_receive)
+    ble_wrapper.start_sensor_read()
     time.sleep(1)  # The sleep is necessary for ignoring the communication between BLE module and Studuino at establishing the connection.
 
 def stop():
@@ -72,7 +76,7 @@ def stop():
     if fBLE:
         stopBLE()
     else:
-        global ser, LOCK_READ, fConnected
+        global ser, LOCK_READ
         if not ser == None:
             fConnected = False
             print('Disconnected.')
@@ -93,6 +97,11 @@ def _sensorRead():
         except Exception as ex:
             print('Read error: ', ex)
 
+def _handle_ble_receive(sender, earg):
+    global sensor
+    rcvData = earg['value']
+    sensor.parseData(rcvData)
+
 def __send(data1, data2):
     """
     Send data to the Studuino.
@@ -108,7 +117,26 @@ def __send(data1, data2):
 
     if fBLE:
     # BLE
-        ble_wrapper.write_command(msg)
+        # Without waiting
+        # ble_wrapper.write_command(msg)
+
+        # With waiting
+        #sensor.startWaitingWriteResponse()
+        #start = datetime.datetime.now()
+        #ble_wrapper.write_command(msg)
+        #print('before wait: ', start)
+        #while (sensor.getWriteFlag() == 1 and (datetime.datetime.now() - start).seconds < 0.1):
+            #pass
+        #print('after wait: ', datetime.datetime.now())
+
+        # With LOCK
+        with LOCK:
+            sensor.startWaitingWriteResponse()
+            start = datetime.datetime.now()
+            ble_wrapper.write_command(msg)
+            while (sensor.getWriteFlag() == 1 and (datetime.datetime.now() - start).seconds < 1):
+                #print('     waiting...')
+                pass
     else:
     # USB
         try:
@@ -230,6 +258,7 @@ def _syncServo(action, delay=0):
     :param action: 説明
     :param delay: 説明
     """
+    global fBLE
     data1 = 0xd0
     data2 = ((action & 0x01) << 6) + delay
     #print('Sync servo', hex(data1), hex(data2))
@@ -237,6 +266,8 @@ def _syncServo(action, delay=0):
     if action == START:
         sensor.startSyncServo()
     if action == STOP:
+        if fBLE:
+            ble_wrapper.waitSyncFinish()
         while sensor.getSyncServoFlag() == 1:
             pass
 
