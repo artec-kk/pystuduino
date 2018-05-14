@@ -25,10 +25,10 @@ version = next((line.split('=')[1].strip().replace("'", '')
 
 
 def main():
-    description = 'studuino'
+    description = 'Python library for Studuino&ArtecRobo'
 
     setup(
-        name='studuino',
+        name='pystuduino',
         version='0.9.0',
         author='Artec Co., Ltd.',
         url='https://github.com/artec-kk/pystuduino',
