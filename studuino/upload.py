@@ -263,7 +263,7 @@ def _readHex(buf):
 				stbyte = tmp[start:start+2]
 				buf.append(int(stbyte, 16))
 
-def start(port, hexFile='firmware.hex'):
+def execute(port, hexFile='firmware.hex'):
 	tStart = datetime.datetime.now()
 	_open(port)
 	
@@ -321,4 +321,4 @@ if __name__ == '__main__':
 		print('python upload.py COM*')
 		quit()
 	#readHex()
-	start(args[1])
+	execute(args[1])
